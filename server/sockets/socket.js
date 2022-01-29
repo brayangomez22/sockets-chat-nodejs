@@ -18,13 +18,17 @@ io.on('connection', (client) => {
 		users.addPerson(client.id, user.name, user.room);
 
 		client.broadcast.to(user.room).emit('list-persons', users.getPeopleInRoom(user.room));
+		client.broadcast.to(user.room).emit('send-message', sendMessage('Admin', `${user.name} entered the chat`));
+
 		callback(users.getPeopleInRoom(user.room));
 	});
 
-	client.on('send-message', (data) => {
+	client.on('send-message', (data, callback) => {
 		let person = users.getPersonById(client.id);
 		let message = sendMessage(person.name, data.message);
 		client.broadcast.to(person.room).emit('send-message', message);
+
+		callback(message);
 	});
 
 	client.on('disconnect', () => {
